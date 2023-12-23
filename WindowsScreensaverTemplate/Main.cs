@@ -24,10 +24,10 @@ namespace WindowsScreensaverTemplate
         private static int counter;
         private static Bitmap loadedImage = null;
         private static Point mouseLoc;
-        private static int timerInterval = (int)(1000 / TARGETFRAMERATE);
+        private static int timerInterval = (int)Math.Round((decimal)(1000 / TARGETFRAMERATE));
         private static Rectangle windowBounds = Rectangle.Empty;
         private static bool previewMode = false;
-        //in an ideal world, nothing below this commen should need to be changed for a simple screensaver
+        //in an ideal world, nothing below this comment should need to be changed for a simple screensaver
         public Main(Rectangle bounds)
         {
             InitializeComponent();
