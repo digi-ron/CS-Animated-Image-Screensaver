@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -24,22 +25,63 @@ namespace WindowsScreensaverTemplate
         private static Bitmap loadedImage = null;
         private static Point mouseLoc;
         private static int timerInterval = (int)(1000 / TARGETFRAMERATE);
+        private static Rectangle windowBounds = Rectangle.Empty;
+        private static bool previewMode = false;
         //in an ideal world, nothing below this commen should need to be changed for a simple screensaver
         public Main(Rectangle bounds)
         {
             InitializeComponent();
+            windowBounds = bounds;
+            Init();
+        }
+
+        public Main(IntPtr windowHandler)
+        {
+            InitializeComponent();
+            SetParent(this.Handle, windowHandler);
+            SetWindowLong(this.Handle, -16, new IntPtr(GetWindowLong(this.Handle, -16) | 0x40000000));
+            Rectangle parent;
+            GetClientRect(windowHandler, out parent);
+            Size = parent.Size;
+            Location = new Point(0, 0);
+            previewMode = true;
+            Init();
+        }
+
+        //dll imports
+        [DllImport("user32.dll")]
+        static extern IntPtr SetParent(IntPtr child, IntPtr parent);
+        [DllImport("user32.dll")]
+        static extern int SetWindowLong(IntPtr window, int index, IntPtr newLong);
+        [DllImport("user32.dll")]
+        static extern int GetWindowLong(IntPtr window, int index);
+        [DllImport("user32.dll")]
+        static extern bool GetClientRect(IntPtr window, out Rectangle rectangle);
+
+
+        private void Init()
+        {
             //set running counter to init value
             counter = COUNTERSTART;
             //set form to match screen bounds
-            this.Bounds = bounds;
-            //make integrated picturebox match parent
-            animatedPictureBox.Width = bounds.Width+OUTERBUFFER;
-            animatedPictureBox.Height = bounds.Height+OUTERBUFFER;
-            animatedPictureBox.Left = 0;
-            animatedPictureBox.Top = 0;
+            if(windowBounds != Rectangle.Empty)
+            {
+                this.Bounds = windowBounds;
+                //make integrated picturebox match parent
+                animatedPictureBox.Width = windowBounds.Width + OUTERBUFFER;
+                animatedPictureBox.Height = windowBounds.Height + OUTERBUFFER;
+                animatedPictureBox.Left = 0;
+                animatedPictureBox.Top = 0;
+
+            } else
+            {
+                previewMode = true;
+            }
+            
             //start the clock
             animationTimer.Interval = timerInterval;
             animationTimer.Start();
+            Cursor.Hide();
         }
 
         private void animationTimer_Tick(object sender, EventArgs e)
@@ -57,25 +99,42 @@ namespace WindowsScreensaverTemplate
                     //if we don't revert the topmost argument, everything is blocked
                     this.TopMost = false;
                     //if you get to this line, you need to make sure that you have the resources in the right format
-                    throw new ArgumentOutOfRangeException("resourceName");
+                    throw new ArgumentOutOfRangeException(resourceName);
                 }
             }
+            animatedPictureBox.Image = loadedImage;
+            animatedPictureBox.Update();
+            counter++;
         }
 
         private void Main_KeyDown(object sender, KeyEventArgs e)
         {
-            Application.Exit();
+            if(!previewMode)
+            {
+                Application.Exit();
+            }
         }
 
         private void animatedPictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (mouseLoc.X - e.Location.X > 3 || mouseLoc.Y - e.Location.Y > 3)
+            if(!previewMode)
+            {
+                if (mouseLoc.X - e.Location.X > MOUSEMOVESENSITIVITY || mouseLoc.Y - e.Location.Y > MOUSEMOVESENSITIVITY)
+                {
+                    Application.Exit();
+                }
+                else
+                {
+                    mouseLoc = e.Location;
+                }
+            }
+        }
+
+        private void animatedPictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if(!previewMode)
             {
                 Application.Exit();
-            }
-            else
-            {
-                mouseLoc = e.Location;
             }
         }
     }

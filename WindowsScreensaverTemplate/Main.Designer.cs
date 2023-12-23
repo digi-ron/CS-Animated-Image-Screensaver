@@ -50,6 +50,7 @@
             this.animatedPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.animatedPictureBox.TabIndex = 0;
             this.animatedPictureBox.TabStop = false;
+            this.animatedPictureBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.animatedPictureBox_MouseDown);
             this.animatedPictureBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.animatedPictureBox_MouseMove);
             // 
             // Main
