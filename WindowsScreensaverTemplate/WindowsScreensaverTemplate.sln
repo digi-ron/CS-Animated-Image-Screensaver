@@ -7,14 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsScreensaverTemplate"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Debug|x86.ActiveCfg = Debug|x86
+		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Debug|x86.Build.0 = Debug|x86
+		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Release|x86.ActiveCfg = Release|x86
+		{FE80B49D-C1D7-468B-B020-2FE6D9CF0476}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
