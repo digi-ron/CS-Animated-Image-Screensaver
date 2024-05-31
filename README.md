@@ -17,3 +17,4 @@
     .\ffmpeg.exe -i source.mp4 -qscale:v 2 frame_%03d.jpg
     ```
 - I can't seem to modify the build command to output a scr file instead of exe, so it has to be renamed each build. As far as i could find this is a limitation with Visual Studio, and/or Microsoft, who have clearly ditched this technology since it stopped needing to be a thing for CRT displays
+- the speed of the animation changes if it's built in 64-bit mode, so I've set the config to export to x86
