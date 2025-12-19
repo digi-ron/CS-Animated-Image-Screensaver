@@ -19,19 +19,21 @@ namespace WindowsScreensaverTemplate
         private static readonly int OUTERBUFFER = 2;
         private static readonly int COUNTERSTART = 1;
         private static readonly int MOUSEMOVESENSITIVITY = 3;
-        private static readonly int TARGETFRAMERATE = 25;
+        private static readonly int TARGETFRAMERATE = 30;
         //runtime variables
         private static int counter;
         private static Bitmap loadedImage = null;
         private static Point mouseLoc;
         private static int timerInterval = (int)Math.Round((decimal)(1000 / TARGETFRAMERATE));
-        private static Rectangle windowBounds = Rectangle.Empty;
+        private Rectangle windowBounds = Rectangle.Empty;
         private static bool previewMode = false;
+        private int threadNum;
         //in an ideal world, nothing below this comment should need to be changed for a simple screensaver
-        public Main(Rectangle bounds)
+        public Main(Rectangle bounds, int threadIndex)
         {
             InitializeComponent();
             windowBounds = bounds;
+            threadNum = threadIndex;
             Init();
         }
 
@@ -80,6 +82,7 @@ namespace WindowsScreensaverTemplate
             
             //start the clock
             animationTimer.Interval = timerInterval;
+            
             animationTimer.Start();
             Cursor.Hide();
         }
@@ -93,18 +96,28 @@ namespace WindowsScreensaverTemplate
             {
                 counter = COUNTERSTART;
                 resourceName = $"{FRAMEPREFIX}{counter.ToString(FRAMENUMFORMAT)}";
-                loadedImage = (Bitmap) Properties.Resources.ResourceManager.GetObject(resourceName);
-                if(loadedImage == null)
+                if (threadNum == 0)
                 {
-                    //if we don't revert the topmost argument, everything is blocked
-                    this.TopMost = false;
-                    //if you get to this line, you need to make sure that you have the resources in the right format
-                    throw new ArgumentOutOfRangeException(resourceName);
+                    loadedImage = (Bitmap)Properties.Resources.ResourceManager.GetObject(resourceName);
+                    if (loadedImage == null)
+                    {
+                        //if we don't revert the topmost argument, everything is blocked
+                        this.TopMost = false;
+                        //if you get to this line, you need to make sure that you have the resources in the right format
+                        throw new ArgumentOutOfRangeException(resourceName);
+                    }
+                }
+                else
+                {
+                    while (loadedImage == null)
+                    {
+                        Console.WriteLine("Waiting on main thread");
+                    }
                 }
             }
             animatedPictureBox.Image = loadedImage;
             animatedPictureBox.Update();
-            counter++;
+            if (threadNum == 0) { counter++; }
         }
 
         private void Main_KeyDown(object sender, KeyEventArgs e)

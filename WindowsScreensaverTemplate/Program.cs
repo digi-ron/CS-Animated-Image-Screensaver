@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -52,7 +53,16 @@ namespace WindowsScreensaverTemplate
             //this will display a instance of the screensaver on each active screen
             foreach (Screen scr in Screen.AllScreens)
             {
-                Application.Run(new Main(scr.Bounds));
+                int index = Array.IndexOf(Screen.AllScreens, scr);
+                //Application.Run(new Main(scr.Bounds));
+                var thread = new Thread(() =>
+                {
+                    var form = new Main(scr.Bounds, index);
+                    form.StartPosition = FormStartPosition.Manual;
+                    form.Bounds = scr.Bounds;
+                    Application.Run(form);
+                });
+                thread.Start();
             }
         }
     }
