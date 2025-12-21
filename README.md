@@ -20,4 +20,5 @@
     > Should you wish to compress the image further, a tool such as [ImageMagick](https://imagemagick.org) can be used to compress each image, using the flag `-quality 90`
 
 - I can't seem to modify the build command to output a scr file instead of exe, so it has to be renamed each build. As far as i could find this is a limitation with Visual Studio, and/or Microsoft, who have clearly ditched this technology since it stopped needing to be a thing for CRT displays
-- the speed of the animation changes if it's built in 64-bit mode, so I've set the config to export to x86
+- the speed of the animation changes if it's built in 64-bit mode, so I've set the config to export to x86 *only* for maximum compatibility
+- Multiple monitor setups with large imagesets (500+ frames) can cause excessive memory usage. This is caused by `Bitmap` objects being unable to be accessed by multiple threads at the same time. I have implemented a copy of the Bitmap array to memory for every monitor other than the main monitor (Thread 0), but I am well aware this uses a lot of RAM. Until/unless I can find a solution to this, this template is *not* suitable for larger "animations"
