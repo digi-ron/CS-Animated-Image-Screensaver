@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,19 +53,57 @@ namespace WindowsScreensaverTemplate
         static void Start()
         {
             //this will display a instance of the screensaver on each active screen
+            List<Thread> threads = new List<Thread>();
+            Bitmap[][] imgs = new Bitmap[Screen.AllScreens.Length][];
             foreach (Screen scr in Screen.AllScreens)
             {
                 int index = Array.IndexOf(Screen.AllScreens, scr);
-                //Application.Run(new Main(scr.Bounds));
+                if (index == 0)
+                {
+                    imgs[index] = null;
+                }
+                else
+                {
+                    imgs[index] = CollectImages();
+                }
+            }
+            foreach (Screen scr in Screen.AllScreens)
+            {
+                int index = Array.IndexOf(Screen.AllScreens, scr);
                 var thread = new Thread(() =>
                 {
-                    var form = new Main(scr.Bounds, index);
+                    Main form = new Main(scr.Bounds, index, imgs[index]);
                     form.StartPosition = FormStartPosition.Manual;
                     form.Bounds = scr.Bounds;
                     Application.Run(form);
                 });
+                threads.Add(thread);
+            }
+            foreach (Thread thread in threads)
+            {
                 thread.Start();
             }
+        }
+
+        static Bitmap[] CollectImages()
+        {
+            List<Bitmap> images = new List<Bitmap>();
+            bool done = false;
+            int counter = 1;
+            do
+            {
+                Bitmap currentBytes = (Bitmap)Properties.Resources.ResourceManager.GetObject(Config.GetAssetString(counter));
+                if (currentBytes == null)
+                {
+                    done = true;
+                }
+                else
+                { 
+                    images.Add(currentBytes);
+                    counter++;
+                }
+            } while (!done);
+            return images.ToArray();
         }
     }
 }

@@ -13,27 +13,25 @@ namespace WindowsScreensaverTemplate
 {
     public partial class Main : Form
     {
-        //developer variables
-        private static readonly string FRAMENUMFORMAT = "000";
-        private static readonly string FRAMEPREFIX = "frame_";
-        private static readonly int OUTERBUFFER = 2;
-        private static readonly int COUNTERSTART = 1;
-        private static readonly int MOUSEMOVESENSITIVITY = 3;
-        private static readonly int TARGETFRAMERATE = 30;
         //runtime variables
-        private static int counter;
+        private int counter;
         private static Bitmap loadedImage = null;
         private static Point mouseLoc;
-        private static int timerInterval = (int)Math.Round((decimal)(1000 / TARGETFRAMERATE));
+        private static int timerInterval = (int)Math.Round((decimal)(1000 / Config.TARGETFRAMERATE));
         private Rectangle windowBounds = Rectangle.Empty;
         private static bool previewMode = false;
         private int threadNum;
+        private Bitmap[] scrImages;
         //in an ideal world, nothing below this comment should need to be changed for a simple screensaver
-        public Main(Rectangle bounds, int threadIndex)
+        public Main(Rectangle bounds, int threadIndex, Bitmap[] imgArr)
         {
             InitializeComponent();
             windowBounds = bounds;
             threadNum = threadIndex;
+            if (imgArr != null)
+            {
+                scrImages = imgArr;
+            }
             Init();
         }
 
@@ -64,14 +62,14 @@ namespace WindowsScreensaverTemplate
         private void Init()
         {
             //set running counter to init value
-            counter = COUNTERSTART;
+            counter = Config.COUNTERSTART;
             //set form to match screen bounds
             if(windowBounds != Rectangle.Empty)
             {
                 this.Bounds = windowBounds;
                 //make integrated picturebox match parent
-                animatedPictureBox.Width = windowBounds.Width + OUTERBUFFER;
-                animatedPictureBox.Height = windowBounds.Height + OUTERBUFFER;
+                animatedPictureBox.Width = windowBounds.Width + Config.OUTERBUFFER;
+                animatedPictureBox.Height = windowBounds.Height + Config.OUTERBUFFER;
                 animatedPictureBox.Left = 0;
                 animatedPictureBox.Top = 0;
 
@@ -89,35 +87,37 @@ namespace WindowsScreensaverTemplate
 
         private void animationTimer_Tick(object sender, EventArgs e)
         {
-            string resourceName = $"{FRAMEPREFIX}{counter.ToString(FRAMENUMFORMAT)}";
-            //resource comes back as Object, cast to Bitmap
-            loadedImage = (Bitmap)Properties.Resources.ResourceManager.GetObject(resourceName);
-            if(loadedImage == null)
+            Bitmap loadedImage;
+            if (scrImages == null)
             {
-                counter = COUNTERSTART;
-                resourceName = $"{FRAMEPREFIX}{counter.ToString(FRAMENUMFORMAT)}";
-                if (threadNum == 0)
+                Bitmap curr = (Bitmap)Properties.Resources.ResourceManager.GetObject(Config.GetAssetString(counter));
+                if (curr == null)
                 {
-                    loadedImage = (Bitmap)Properties.Resources.ResourceManager.GetObject(resourceName);
-                    if (loadedImage == null)
+                    counter = Config.COUNTERSTART;
+                    curr = (Bitmap)Properties.Resources.ResourceManager.GetObject(Config.GetAssetString(counter));
+                    if (curr == null)
                     {
-                        //if we don't revert the topmost argument, everything is blocked
-                        this.TopMost = false;
-                        //if you get to this line, you need to make sure that you have the resources in the right format
-                        throw new ArgumentOutOfRangeException(resourceName);
+                        throw new ArgumentException("Failure to load from Resource Manager. Ensure images are added to solution!");
                     }
+                }
+                loadedImage = curr;
+                counter++;
+            }
+            else
+            {
+                if (counter < scrImages.Length - 1)
+                {
+                    counter++;
                 }
                 else
                 {
-                    while (loadedImage == null)
-                    {
-                        Console.WriteLine("Waiting on main thread");
-                    }
+                    counter = Config.COUNTERSTART;
                 }
+                loadedImage = scrImages[counter];
             }
+            
             animatedPictureBox.Image = loadedImage;
             animatedPictureBox.Update();
-            if (threadNum == 0) { counter++; }
         }
 
         private void Main_KeyDown(object sender, KeyEventArgs e)
@@ -132,7 +132,7 @@ namespace WindowsScreensaverTemplate
         {
             if(!previewMode)
             {
-                if (mouseLoc.X - e.Location.X > MOUSEMOVESENSITIVITY || mouseLoc.Y - e.Location.Y > MOUSEMOVESENSITIVITY)
+                if (mouseLoc.X - e.Location.X > Config.MOUSEMOVESENSITIVITY || mouseLoc.Y - e.Location.Y > Config.MOUSEMOVESENSITIVITY)
                 {
                     Application.Exit();
                 }
