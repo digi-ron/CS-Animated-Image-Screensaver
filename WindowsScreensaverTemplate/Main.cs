@@ -14,13 +14,14 @@ namespace WindowsScreensaverTemplate
     public partial class Main : Form
     {
         //runtime variables
-        private int counter;
-        private static Bitmap loadedImage = null;
+        private static int counter;
+        private int lastCounter;
+        private static readonly Bitmap loadedImage = null;
         private static Point mouseLoc;
-        private static int timerInterval = (int)Math.Round((decimal)(1000 / Config.TARGETFRAMERATE));
+        private static readonly int timerInterval = (int)Math.Round((decimal)(1000 / Config.TARGETFRAMERATE));
         private Rectangle windowBounds = Rectangle.Empty;
         private static bool previewMode = false;
-        private int threadNum;
+        private readonly int threadNum;
         private Bitmap[] scrImages;
         //in an ideal world, nothing below this comment should need to be changed for a simple screensaver
         public Main(Rectangle bounds, int threadIndex, Bitmap[] imgArr)
@@ -90,6 +91,8 @@ namespace WindowsScreensaverTemplate
             Bitmap loadedImage;
             if (scrImages == null)
             {
+                while (lastCounter == counter) { }
+                lastCounter = counter;
                 Bitmap curr = (Bitmap)Properties.Resources.ResourceManager.GetObject(Config.GetAssetString(counter));
                 if (curr == null)
                 {
@@ -101,10 +104,11 @@ namespace WindowsScreensaverTemplate
                     }
                 }
                 loadedImage = curr;
-                counter++;
             }
             else
             {
+                while (lastCounter == counter) { }
+                lastCounter = counter;
                 if (counter < scrImages.Length - 1)
                 {
                     counter++;
